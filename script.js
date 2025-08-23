@@ -1,7 +1,7 @@
 console.log("Script file loaded successfully!");
 
-const clientId = "b54c6d36472c4852a64f4e313fb565e5"; 
-const redirectUri = "https://realsususamogus.github.io/spotifyanalyser"; 
+const clientId = "ab1bd9f8bc8049c5a573e427804a502f"; 
+const redirectUri = "https://realsususamogus.github.io/spotifyanalyser/#"; 
 const scopes = [
   "playlist-read-private",
   "playlist-read-collaborative"
