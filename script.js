@@ -1,6 +1,7 @@
+console.log("Script file loaded successfully!");
 
 const clientId = "b54c6d36472c4852a64f4e313fb565e5"; 
-const redirectUri = "https://realsususamogus.github.io/spotifyanalyser/"; 
+const redirectUri = "http://127.0.0.1:5500/"; 
 const scopes = [
   "playlist-read-private",
   "playlist-read-collaborative"
@@ -32,17 +33,18 @@ function getTokenFromUrl() {
   return hash.access_token;
 }
 
-let accessToken = getTokenFromUrl();
-
-document.getElementById("login-btn").addEventListener("click", () => {
-  window.location = getLoginUrl();
-});
-
 // fetching playlists
-async function fetchPlaylists() {
+async function fetchPlaylists(accessToken) {
   const response = await fetch("https://api.spotify.com/v1/me/playlists", {
     headers: { Authorization: "Bearer " + accessToken }
   });
+
+   // Add error handling
+   if (!response.ok) {
+    console.error("Failed to fetch playlists:", response.status, response.statusText);
+    return;
+  }
+
   const data = await response.json();
 
   const container = document.getElementById("playlists");
@@ -51,13 +53,13 @@ async function fetchPlaylists() {
   data.items.forEach((playlist) => {
     const button = document.createElement("button");
     button.innerText = `${playlist.name} (${playlist.tracks.total} tracks)`;
-    button.addEventListener("click", () => fetchTracks(playlist.id));
+    button.addEventListener("click", () => fetchTracks(playlist.id, accessToken));
     container.appendChild(button);
   });
 }
 
 // fetching features
-async function fetchTracks(playlistId) {
+async function fetchTracks(playlistId, accessToken) {
   let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
   let allTrackIds = [];
 
@@ -65,6 +67,11 @@ async function fetchTracks(playlistId) {
     const response = await fetch(url, {
       headers: { Authorization: "Bearer " + accessToken }
     });
+
+    if (!response.ok) {
+      console.error("Failed to fetch tracks:", response.status);
+      return;
+    }
     const data = await response.json();
 
     data.items.forEach((item) => {
@@ -119,7 +126,31 @@ function analyze(features) {
   });
 }
 
-// starting yes
-if (accessToken) {
-  fetchPlaylists();
-}
+// Wait for DOM to load before running initialization
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("DOM loaded, initializing app...");
+  
+  let accessToken = getTokenFromUrl();
+  console.log("Current URL:", window.location.href);
+  console.log("URL hash:", window.location.hash);
+  console.log("Extracted access token:", accessToken);
+  console.log("Access token type:", typeof accessToken);
+
+  const loginBtn = document.getElementById("login-btn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+      const loginUrl = getLoginUrl();
+      console.log("Generated login URL:", loginUrl);
+      console.log("Redirect URI being used:", redirectUri);
+      console.log("Client ID being used:", clientId);
+      window.location = loginUrl;
+    });
+  }
+
+  if (accessToken) {
+    console.log("Access token found, fetching playlists...");
+    fetchPlaylists(accessToken);
+  } else {
+    console.log("No access token found");
+  }
+});
