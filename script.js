@@ -1,7 +1,7 @@
 console.log("Script file loaded successfully!");
 
-const clientId = "ab1bd9f8bc8049c5a573e427804a502f"; 
-const redirectUri = "https://realsususamogus.github.io/spotifyanalyser/#"; 
+const clientId = "b54c6d36472c4852a64f4e313fb565e5"; 
+const redirectUri = "http://127.0.0.1:5500/"; 
 const scopes = [
   "playlist-read-private",
   "playlist-read-collaborative"
@@ -19,18 +19,15 @@ function getLoginUrl() {
 }
 
 function getTokenFromUrl() {
-  const hash = window.location.hash
-    .substring(1)
-    .split("&")
-    .reduce((initial, item) => {
-      if (item) {
-        const parts = item.split("=");
-        initial[parts[0]] = decodeURIComponent(parts[1]);
-      }
-      return initial;
-    }, {});
-  window.location.hash = "";
-  return hash.access_token;
+  const hash = window.location.hash.substring(1).split('&').reduce((initial, item) => {
+    if (item) {
+      const parts = item.split('=');
+      initial[parts[0]] = decodeURIComponent(parts[1]);
+    }
+    return initial;
+  }, {});
+  window.location.hash = '';
+  return hash;
 }
 
 // fetching playlists
@@ -127,30 +124,27 @@ function analyze(features) {
 }
 
 // Wait for DOM to load before running initialization
-document.addEventListener("DOMContentLoaded", function() {
-  console.log("DOM loaded, initializing app...");
-  
-  let accessToken = getTokenFromUrl();
-  console.log("Current URL:", window.location.href);
-  console.log("URL hash:", window.location.hash);
-  console.log("Extracted access token:", accessToken);
-  console.log("Access token type:", typeof accessToken);
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('DOM loaded, initializing app...');
+
+  const tokens = getTokenFromUrl();
+  const accessToken = tokens.access_token;
+  const refreshToken = tokens.refresh_token;
+
+  console.log('Access Token:', accessToken);
+  console.log('Refresh Token:', refreshToken);
 
   const loginBtn = document.getElementById("login-btn");
   if (loginBtn) {
     loginBtn.addEventListener("click", () => {
-      const loginUrl = getLoginUrl();
-      console.log("Generated login URL:", loginUrl);
-      console.log("Redirect URI being used:", redirectUri);
-      console.log("Client ID being used:", clientId);
-      window.location = loginUrl;
+      window.location = 'http://127.0.0.1:3000/login'; // Redirect to the backend login route
     });
   }
 
   if (accessToken) {
-    console.log("Access token found, fetching playlists...");
+    console.log('Access token found, fetching playlists...');
     fetchPlaylists(accessToken);
   } else {
-    console.log("No access token found");
+    console.log('No access token found');
   }
 });
